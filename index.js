@@ -1,36 +1,15 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
+const connection = require("./db");
 const cTable = require("console.table");
 const Employees = require("./public/employees.js");
 const Roles = require("./public/roles.js");
 const Department = require("./public/departments.js");
 
-const connection = mysql.connectAt({
-  host: "localhost",
-  port: 3306,
-  user: "root",
-  database: "manage_my_employees",
-});
+begin();
 
-// connection.connect();
-// connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-//     if (error) throw error;
-//     console.log('The solution is: ', results[0].solution);
-//   });
-//   connection.end();
-
-connection.connect((err) => {
-    if (err) {
-      console.error('error connecting: ' + err.stack);
-      return;
-    }
-    console.log('connected as id ' + connection.threadId);
-
-    begin();
-  });
-
-function begin() {
-  inquirer
+async function begin() {
+  await inquirer
     .prompt([
       {
         type: "list",
@@ -44,41 +23,39 @@ function begin() {
           "Remove Employee",
           "Update Employee Role",
           "Update Employee Manager",
+          "Done"
         ],
       },
     ])
     .then((response) => {
       switch (response.chooseAction) {
         case "View All Employees":
-          selectAllEmployees();
+          Employees.selectAllEmployees();
           break;
         case "View All Employees By Department":
-          selectAllEmployeesDept();
+          Department.selectAllEmployeesDept();
           break;
         case "View All Employees By Manager":
-          // selectAllEmployeesManagers();
+          selectAllEmployeesManagers();
           break;
         case "Add Employees":
-          insertEmployee();
+          Employees.insertEmployee();
           break;
         case "Remove Employee":
-          deleteEmployee();
+          Employees.deleteEmployee();
           break;
         case "Update Employee Role":
-          updateEmplRole();
+          Roles.updateEmplRole();
           break;
         case "Update Employee Manager":
-          // updateEmplManager();
+          updateEmplManager();
         default:
             connection.end();
-      }
+      };
     });
-}
+};
 
-function selectAllEmployees(){
-    connection.query("SELECT * FROM employees", (err, response) => {
-        console.table(response);
-        begin();
-    })
-}
+
+
+
 
