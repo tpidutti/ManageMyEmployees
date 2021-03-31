@@ -2,7 +2,7 @@ DROP DATABASE IF EXISTS manage_my_employees_DB;
 
 CREATE DATABASE manage_my_employees_DB;
 
-USE manage_my_employees;
+USE manage_my_employees_DB;
 
 CREATE TABLE employees (
     empl_id INT NOT NULL AUTO_INCREMENT,
@@ -10,7 +10,7 @@ CREATE TABLE employees (
     last_name VARCHAR(30) NOT NULL,
     role_id INT NOT NULL,
     manager_id INT NULL,
-    PRIMARY KEY (empl_id),
+    PRIMARY KEY (empl_id)
     -- FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );
 
@@ -19,7 +19,7 @@ CREATE TABLE roles (
     title VARCHAR(30) NOT NULL,
     salary DECIMAL(10,2) NOT NULL,
     dept_id INT NOT NULL,
-    PRIMARY KEY (role_id),
+    PRIMARY KEY (role_id)
     -- FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
 );
 
