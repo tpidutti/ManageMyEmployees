@@ -1,4 +1,4 @@
-// const mysql = require("mysql");
+const mysql = require("mysql");
 const inquirer = require("inquirer");
 const connection = require("./db");
 // const cTable = require("console.table");
@@ -63,7 +63,7 @@ function begin() {
           connection.end();
       }
     });
-};
+}
 
 function selectAllEmployees() {
   connection.query("SELECT * FROM employees;", (err, response) => {
@@ -72,7 +72,7 @@ function selectAllEmployees() {
 
     begin();
   });
-};
+}
 
 function selectAllDept() {
   connection.query("SELECT * FROM departments;", (err, response) => {
@@ -81,7 +81,7 @@ function selectAllDept() {
 
     begin();
   });
-};
+}
 
 function selectAllRoles() {
   connection.query("SELECT * FROM roles;", (err, response) => {
@@ -90,7 +90,7 @@ function selectAllRoles() {
 
     begin();
   });
-};
+}
 
 function insertEmployee() {
   inquirer
@@ -109,24 +109,29 @@ function insertEmployee() {
       },
       {
         type: "list",
-        name: "role",
+        name: "role_id",
         choices: [
-          "Charge Nurse",
-          "CNA",
-          "Billing",
-          "Doctor",
-          "Leagal Team Lead",
+          { name: "Charge Nurse", value: 1 },
+          { name: "CNA", value: 2 },
+          { name: "Billing", values: 3 },
+          { name: "Doctor", values: 4 },
+          { name: "Leagal Team Lead", values: 5 },
         ],
       },
     ])
     .then((response) => {
-      connection.query("INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?);");
-        console.table(response);
-  
-        begin();
-     
+      connection.query(
+        "INSERT INTO employees SET ?",
+        response,
+        (err, results) => {
+          if (err) throw err;
+          console.table(results);
+
+          begin();
+        }
+      );
     });
-};
+}
 
 function insertDept() {
   inquirer
@@ -137,41 +142,79 @@ function insertDept() {
       choices: ["Nursing", "Legal", "Finance", "Medical"],
     })
     .then((response) => {
-      connection.query("INSERT INTO departments SET department_name;");
-      console.table(response);
+      connection.query(
+        "INSERT INTO departments SET ?",
+        response,
+        (err, results) => {
+          if (err) throw err;
+          console.table(results);
 
-      begin();
+          begin();
+        }
+      );
     });
-};
+}
 
 function insertRole() {
-  inquirer
-    .prompt({
-      type: "list",
-      name: "role",
-      choices: ["Charge Nurse", "CNA", "Billing", "Doctor", "Leagal Team Lead"]
-    })
-    .then((response) => {
-      connection.query("INSERT INTO roles SET title;");
-      console.table(response);
-      begin();
-    });
-};
+  connection.query(
+    "SELECT * FROM departments",
+    (err, results) => {
+      if (err) throw err;
+      const departments = [...results.map(dept => ({value: dept.dept_id, name: dept.department_name}))]
+      inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "title",
+            choices: [
+              "Charge Nurse",
+              "CNA",
+              "Billing",
+              "Doctor",
+              "Leagal Team Lead",
+              "Staff Nurse",
+            ],
+          },
+          {
+            type: "number",
+            name: "salary",
+            message: "Enter the salary for this role.",
+          },
+          {
+            type: "list",
+            name: "dept_id",
+            choices: departments,
+            message: "Choose the deparment that the role belongs to.",
+          }
+        ])
+        .then((response) => {
+          connection.query("INSERT INTO roles SET ?", response, (err, results) => {
+            if (err) throw err;
+            console.table(results);
+            begin();
+          });
+        });
+    }
+  );
+}
 
 function deleteEmployee() {
   inquirer
     .prompt({
       type: "number",
-      name: "employee_id",
+      name: "empl_id",
       message:
         "What is the id number of the employee that you want to remove from the database?",
     })
     .then((response) => {
-      connection.query("DELETE FROM employees WHERE empl_id = ?;");
-      console.table(response);
-      begin();
+      connection.query("DELETE FROM employees WHERE empl_id = ?", response, (err, results)=> {
+        if (err) throw err;
+        console.table(results);
+        begin();
+
+      });
     });
-};
+}
 
 function deleteDept() {
   inquirer
@@ -182,11 +225,14 @@ function deleteDept() {
         "What is the id number of the department that you want to remove from the database?",
     })
     .then((response) => {
-      connection.query("DELETE FROM departments WHERE dept_id = ?;");
-      console.table(response);
-      begin();
+      connection.query("DELETE FROM departments WHERE dept_id = ?", response, (err, results)=> {
+        if (err) throw err;
+        console.table(results);
+        begin();
+
+      });
     });
-};
+}
 
 function deleteRole() {
   inquirer
@@ -197,11 +243,14 @@ function deleteRole() {
         "What is the id number of the role that you want to remove from the database?",
     })
     .then((response) => {
-      connection.query("DELETE FROM roles WHERE role_id = ?;");
-      console.table(response);
-      begin();
+      connection.query("DELETE FROM roles WHERE role_id = ?", response, (err, results)=> {
+        if (err) throw err;
+        console.table(results);
+        begin();
+
+      });
     });
-};
+}
 
 function updateEmplRole() {
   inquirer
@@ -212,10 +261,12 @@ function updateEmplRole() {
     })
     .then((response) => {
       connection.query(
-        "UPDATE employees SET title = ?, salary = ?, dept_id = ? WHERE empl_id = ?;"
-      );
-      console.table(response);
+        "UPDATE employees SET title = ?, salary = ?, dept_id = ? WHERE empl_id = ?", response, (err, results) => {
+          if (err) throw err;
+          console.table(response);
+    
+          begin();
 
-      begin();
+        });
     });
 }
